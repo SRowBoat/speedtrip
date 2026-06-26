@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Speed, Distance & Time Saved Calculator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .calculator-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            width: 380px;
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        input[type="range"] {
+            flex: 1;
+        }
+        input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            background-color: white;
+        }
+        .speed-display {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007aff;
+            min-width: 70px;
+            text-align: right;
+        }
+        .lock-indicator {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 12px;
+            font-weight: bold;
+            color: #007aff;
+            background: #e6f2ff;
+            padding: 6px;
+            border-radius: 20px;
+            border: 1px dashed #007aff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .note {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+        .comparison-box {
+            background-color: #e8f2ff;
+            border: 1px solid #b3d7ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 25px;
+        }
+        .comparison-box h3 {
+            margin-top: 0;
+            font-size: 16px;
+            color: #0056b3;
+        }
+        .stat-line {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #333;
+        }
+        .result-highlight {
+            font-size: 20px;
+            font-weight: bold;
+            color: #d9383a;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator-card">
+    <h2>Motion & Time Saved Calculator</h2>
+    
+    <div class="input-group">
+        <label for="distance">Distance to Destination (km)</label>
+        <input type="number" id="distance" value="60" step="any" min="0">
+        <div class="note">Changing this updates Duration of Trip</div>
+    </div>
+
+    <div class="lock-indicator">
+        🔒 Locked by Current Speed
+    </div>
+
+    <div class="input-group">
+        <label for="time">Duration of Trip (Minutes)</label>
+        <input type="number" id="time" value="60" step="any" min="0">
+        <div class="note">Changing this updates Distance to Destination</div>
+    </div>
+
+    <div class="input-group" style="margin-top: 25px;">
+        <label for="speed">Current Speed: <span id="speedVal" class="speed-display">60</span> km/h</label>
+        <div class="slider-container">
+            <input type="range" id="speed" min="1" max="200" value="60">
+        </div>
+    </div>
+
+    <div class="comparison-box">
+        <h3>Time Saved Comparison</h3>
+        <div class="input-group" style="margin-bottom: 15px;">
+            <label for="baseSpeed">Compare against a Baseline Limit:</label>
+            <select id="baseSpeed">
+                <option value="15">School Zone / Shared Space (15 km/h)</option>
+                <option value="30">Residential Limit (30 km/h)</option>
+                <option value="40">Urban Limit (40 km/h)</option>
+                <option value="60">Arterial Road (60 km/h)</option>
+                <option value="100" selected>Highway Speed (100 km/h)</option>
+            </select>
+        </div>
+        
+        <div class="stat-line">
+            <strong>Baseline Trip Duration:</strong>
+            <div id="baseTimeResult">36 minutes</div>
+        </div>
+
+        <div class="stat-line" style="margin-top: 15px;">
+            <strong>Time Difference at Current Speed:</strong>
+            <div id="timeSavedResult" class="result-highlight">0 minutes</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const speedSlider = document.getElementById('speed');
+    const speedVal = document.getElementById('speedVal');
+    const timeInput = document.getElementById('time');
+    const distanceInput = document.getElementById('distance');
+    const baseSpeedInput = document.getElementById('baseSpeed');
+    const baseTimeResult = document.getElementById('baseTimeResult');
+    const timeSavedResult = document.getElementById('timeSavedResult');
+
+    function round(num) {
+        return Math.round((num + Number.EPSILON) * 100) / 100;
+    }
+
+    function calculateTimeSaved() {
+        const currentSpeed = parseFloat(speedSlider.value);
+        const baseSpeed = parseFloat(baseSpeedInput.value);
+        const distance = parseFloat(distanceInput.value);
+
+        if (currentSpeed > 0 && baseSpeed > 0 && distance > 0) {
+            const timeAtBase = (distance / baseSpeed) * 60;
+            const timeAtCurrent = (distance / currentSpeed) * 60;
+            const saved = timeAtBase - timeAtCurrent;
+
+            // Update baseline time display
+            baseTimeResult.textContent = `${round(timeAtBase)} minutes`;
+
+            // Update time saved/lost display
+            if (saved > 0) {
+                timeSavedResult.textContent = `${round(saved)} minutes sooner`;
+                timeSavedResult.style.color = "#28a745"; // Green
+            } else if (saved < 0) {
+                timeSavedResult.textContent = `${round(Math.abs(saved))} minutes slower`;
+                timeSavedResult.style.color = "#d9383a"; // Red
+            } else {
+                timeSavedResult.textContent = "0 minutes (Speeds are equal)";
+                timeSavedResult.style.color = "#555";
+            }
+        } else {
+            baseTimeResult.textContent = "0 minutes";
+            timeSavedResult.textContent = "0 minutes";
+            timeSavedResult.style.color = "#555";
+        }
+    }
+
+    // Event 1: Speed Slider Updates
+    speedSlider.addEventListener('input', () => {
+        const speed = parseFloat(speedSlider.value);
+        speedVal.textContent = speed;
+        
+        // NEW LOGIC: Hold Distance locked, update Duration of Trip instead
+        const distance = parseFloat(distanceInput.value) || 0;
+        if (speed > 0) {
+            timeInput.value = round((distance / speed) * 60);
+        }
+        
+        calculateTimeSaved();
+    });
+
+    // Event 2: Duration Input Updates
+    timeInput.addEventListener('input', () => {
+        const speed = parseFloat(speedSlider.value);
+        const mins = parseFloat(timeInput.value);
+        
+        if (!isNaN(mins)) {
+            distanceInput.value = round(speed * (mins / 60));
+            calculateTimeSaved();
+        }
+    });
+
+    // Event 3: Distance Input Updates
+    distanceInput.addEventListener('input', () => {
+        const speed = parseFloat(speedSlider.value);
+        const distance = parseFloat(distanceInput.value);
+        
+        if (!isNaN(distance) && speed > 0) {
+            timeInput.value = round((distance / speed) * 60);
+            calculateTimeSaved();
+        }
+    });
+
+    // Event 4: Dropdown Selection Changes
+    baseSpeedInput.addEventListener('change', () => {
+        calculateTimeSaved();
+    });
+
+    // Initialize calculation on load
+    calculateTimeSaved();
+</script>
+
+</body>
+</html>
