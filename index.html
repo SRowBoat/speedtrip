@@ -3,287 +3,401 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Speedometer & Trip Calculator</title>
+    <title>Digital Diet & Footprint Calculator</title>
+    <!-- Tailwind CSS for modern adaptive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #f4f7f6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
+            font-family: 'Inter', sans-serif;
         }
-        .calculator-card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            width: 380px;
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --accent-green: #10b981;
+            --accent-orange: #f97316;
+            --accent-red: #ef4444;
+            --border-color: #e2e8f0;
         }
-        h2 {
-            margin-top: 0;
-            color: #333;
-            text-align: center;
-            margin-bottom: 20px;
+        /* Dynamic transition effects */
+        .slider-input::-webkit-slider-thumb {
+            transition: transform 0.1s;
         }
-        .gauge-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 15px;
-        }
-        #speedometer {
-            width: 280px;
-            height: 200px;
-        }
-        .input-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #555;
-        }
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        input[type="range"] {
-            flex: 1;
-        }
-        input[type="number"], select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 16px;
-            background-color: white;
-        }
-        .lock-indicator {
-            text-align: center;
-            margin: 15px 0;
-            font-size: 12px;
-            font-weight: bold;
-            color: #007aff;
-            background: #e6f2ff;
-            padding: 6px;
-            border-radius: 20px;
-            border: 1px dashed #007aff;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .note {
-            font-size: 12px;
-            color: #888;
-            margin-top: 4px;
-        }
-        .comparison-box {
-            background-color: #e8f2ff;
-            border: 1px solid #b3d7ff;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 25px;
-        }
-        .comparison-box h3 {
-            margin-top: 0;
-            font-size: 16px;
-            color: #0056b3;
-        }
-        .stat-line {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #333;
-        }
-        .result-highlight {
-            font-size: 20px;
-            font-weight: bold;
-            color: #d9383a;
-            margin-top: 2px;
+        .slider-input:active::-webkit-slider-thumb {
+            transform: scale(1.2);
         }
     </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-900 min-h-screen p-4 md:p-8">
 
-<div class="calculator-card">
-    <h2>Motion & Time Saved Calculator</h2>
-    
-    <div class="gauge-container">
-        <svg id="speedometer" viewBox="0 0 200 160" width="100%" height="100%">
-            <path d="M 20 130 A 80 80 0 0 1 180 130" fill="none" stroke="#e0e0e0" stroke-width="12" stroke-linecap="round"/>
+<div class="max-w-6xl mx-auto">
+    <header class="text-center mb-10">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-slate-800 tracking-tight">Digital Diet & Footprint Calculator</h1>
+        <p class="text-slate-500 mt-2 text-lg max-w-2xl mx-auto">Measure your personal slice of global cloud infrastructure, remote work software, and physical energy grids.</p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <!-- Left Column: User Inputs (Sliders and Checkboxes) -->
+        <div class="lg:col-span-7 space-y-6">
             
-            <text x="18" y="145" font-size="10" text-anchor="middle" fill="#777">0</text>
-            <text x="30" y="85" font-size="10" text-anchor="middle" fill="#777">40</text>
-            <text x="70" y="42" font-size="10" text-anchor="middle" fill="#777">80</text>
-            <text x="130" y="42" font-size="10" text-anchor="middle" fill="#777">120</text>
-            <text x="170" y="85" font-size="10" text-anchor="middle" fill="#777">160</text>
-            <text x="182" y="145" font-size="10" text-anchor="middle" fill="#777">200</text>
-            
-            <text x="100" y="95" id="gaugeSpeedNum" font-size="24" font-weight="bold" text-anchor="middle" fill="#111">60</text>
-            <text x="100" y="110" font-size="9" font-weight="600" text-anchor="middle" fill="#777" letter-spacing="0.5">KM/H</text>
-            <text x="100" y="150" id="gaugeTimeNum" font-size="11" font-weight="bold" text-anchor="middle" fill="#007aff">60 min</text>
-            
-            <circle cx="100" cy="130" r="6" fill="#333"/>
-            
-            <line id="needle" x1="100" y1="130" x2="100" y2="55" stroke="#ff3b30" stroke-width="3" stroke-linecap="round" transform="rotate(-54 100 130)"/>
-        </svg>
-    </div>
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800 border-b border-slate-100 pb-3 mb-5 flex items-center gap-2">
+                    🎬 Media, Video & Gaming
+                </h2>
+                
+                <div class="space-y-5">
+                    <div class="input-group">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="font-medium text-slate-700 text-sm">Audio Streaming (Spotify, Apple Music, Podcasts)</label>
+                            <span class="text-xs text-slate-400">1 pt/hr</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <input type="range" id="audio" min="0" max="24" step="0.5" value="1" oninput="calculateScore()" class="slider-input flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                            <span class="w-16 text-right font-bold text-sm text-slate-600 bg-slate-50 py-1 px-2 rounded-md" id="audio-val">1 hr</span>
+                        </div>
+                    </div>
 
-    <div class="input-group">
-        <label for="distance">Distance to Destination (km)</label>
-        <input type="number" id="distance" value="60" step="any" min="0">
-        <div class="note">Changing this updates Duration of Trip</div>
-    </div>
+                    <div class="input-group">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="font-medium text-slate-700 text-sm">Standard Definition Video (TikTok, Reels, 480p Streams)</label>
+                            <span class="text-xs text-slate-400">3 pts/hr</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <input type="range" id="sd-video" min="0" max="24" step="0.5" value="0.5" oninput="calculateScore()" class="slider-input flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                            <span class="w-16 text-right font-bold text-sm text-slate-600 bg-slate-50 py-1 px-2 rounded-md" id="sd-video-val">0.5 hr</span>
+                        </div>
+                    </div>
 
-    <div class="lock-indicator">
-        🔒 Locked by Current Speed
-    </div>
+                    <div class="input-group">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="font-medium text-slate-700 text-sm">High-Definition Video (Netflix, YouTube 1080p)</label>
+                            <span class="text-xs text-slate-400">10 pts/hr</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <input type="range" id="hd-video" min="0" max="24" step="0.5" value="2" oninput="calculateScore()" class="slider-input flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                            <span class="w-16 text-right font-bold text-sm text-slate-600 bg-slate-50 py-1 px-2 rounded-md" id="hd-video-val">2 hr</span>
+                        </div>
+                    </div>
 
-    <div class="input-group">
-        <label for="time">Duration of Trip (Minutes)</label>
-        <input type="number" id="time" value="60" step="any" min="0">
-        <div class="note">Changing this updates Distance to Destination</div>
-    </div>
+                    <div class="input-group">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="font-medium text-slate-700 text-sm">4K Ultra-HD Video (Smart TVs, Premium Streams)</label>
+                            <span class="text-xs text-slate-400">30 pts/hr</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <input type="range" id="uhd-video" min="0" max="24" step="0.5" value="0" oninput="calculateScore()" class="slider-input flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                            <span class="w-16 text-right font-bold text-sm text-slate-600 bg-slate-50 py-1 px-2 rounded-md" id="uhd-video-val">0 hr</span>
+                        </div>
+                    </div>
 
-    <div class="input-group" style="margin-top: 25px;">
-        <label for="speed">Adjust Speed Slider:</label>
-        <div class="slider-container">
-            <input type="range" id="speed" min="1" max="200" value="60">
+                    <!-- Online Gaming Slider -->
+                    <div class="input-group">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="font-medium text-slate-700 text-sm">Online / Cloud Gaming (Consoles, High-End PCs, GeForce Now)</label>
+                            <span class="text-xs text-slate-400">12 pts/hr</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <input type="range" id="gaming" min="0" max="12" step="0.5" value="1" oninput="calculateScore()" class="slider-input flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                            <span class="w-16 text-right font-bold text-sm text-slate-600 bg-slate-50 py-1 px-2 rounded-md" id="gaming-val">1 hr</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800 border-b border-slate-100 pb-3 mb-5 flex items-center gap-2">
+                    💼 Work & Communication
+                </h2>
+                
+                <div class="space-y-5">
+                    <!-- Work at Home Slider -->
+                    <div class="input-group">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="font-medium text-slate-700 text-sm">Remote Video Calls (MS Teams, Zoom, Slack, Webex)</label>
+                            <span class="text-xs text-slate-400">15 pts/hr</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <input type="range" id="work-calls" min="0" max="12" step="0.5" value="1.5" oninput="calculateScore()" class="slider-input flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                            <span class="w-16 text-right font-bold text-sm text-slate-600 bg-slate-50 py-1 px-2 rounded-md" id="work-calls-val">1.5 hr</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="font-medium text-slate-700 text-sm">Static Reading & Feeds (Substack, Wikipedia, Kindle Cloud)</label>
+                            <span class="text-xs text-slate-400">0.1 pts/hr</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <input type="range" id="reading" min="0" max="24" step="0.5" value="1" oninput="calculateScore()" class="slider-input flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                            <span class="w-16 text-right font-bold text-sm text-slate-600 bg-slate-50 py-1 px-2 rounded-md" id="reading-val">1 hr</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="font-medium text-slate-700 text-sm">Social Media Scrolling (Instagram, Facebook feeds)</label>
+                            <span class="text-xs text-slate-400">8 pts/hr</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <input type="range" id="scrolling" min="0" max="24" step="0.5" value="1" oninput="calculateScore()" class="slider-input flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                            <span class="w-16 text-right font-bold text-sm text-slate-600 bg-slate-50 py-1 px-2 rounded-md" id="scrolling-val">1 hr</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <label for="chatting" class="text-sm font-medium text-slate-700 cursor-pointer">Active Text Chatting (WhatsApp, iMessage)?</label>
+                        <input type="checkbox" id="chatting" checked onchange="calculateScore()" class="w-5 h-5 rounded border-slate-300 text-emerald-500 focus:ring-emerald-500 accent-emerald-500 cursor-pointer">
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800 border-b border-slate-100 pb-3 mb-5 flex items-center gap-2">
+                    🤖 Generative AI Models
+                </h2>
+                
+                <div class="space-y-5">
+                    <div class="input-group">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="font-medium text-slate-700 text-sm">Basic Text Queries (Short ChatGPT/Gemini answers)</label>
+                            <span class="text-xs text-slate-400">0.2 pts / prompt</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <input type="range" id="ai-text" min="0" max="100" step="1" value="5" oninput="calculateScore()" class="slider-input flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                            <span class="w-16 text-right font-bold text-sm text-slate-600 bg-slate-50 py-1 px-2 rounded-md" id="ai-text-val">5</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="font-medium text-slate-700 text-sm">Deep Reasoning / Multi-Turn Chats (Coding, complex research)</label>
+                            <span class="text-xs text-slate-400">1.0 pt / prompt</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <input type="range" id="ai-deep" min="0" max="50" step="1" value="1" oninput="calculateScore()" class="slider-input flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                            <span class="w-16 text-right font-bold text-sm text-slate-600 bg-slate-50 py-1 px-2 rounded-md" id="ai-deep-val">1</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="font-medium text-slate-700 text-sm">Image/Video Generation (Midjourney, DALL-E, Sora)</label>
+                            <span class="text-xs text-slate-400">5.0 pts / prompt</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <input type="range" id="ai-image" min="0" max="20" step="1" value="0" oninput="calculateScore()" class="slider-input flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                            <span class="w-16 text-right font-bold text-sm text-slate-600 bg-slate-50 py-1 px-2 rounded-md" id="ai-image-val">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800 border-b border-slate-100 pb-3 mb-5 flex items-center gap-2">
+                    ☁️ Background Cloud Services
+                </h2>
+                
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <label for="smarthome" class="text-sm font-medium text-slate-700 cursor-pointer">Smart Home Active Baseline (Ring, Alexa, Smart Plugs)</label>
+                        <input type="checkbox" id="smarthome" checked onchange="calculateScore()" class="w-5 h-5 rounded border-slate-300 text-emerald-500 focus:ring-emerald-500 accent-emerald-500 cursor-pointer">
+                    </div>
+                    <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <label for="backups" class="text-sm font-medium text-slate-700 cursor-pointer">Automated Cloud Backups (Continuous photo/4K video device sync)</label>
+                        <input type="checkbox" id="backups" checked onchange="calculateScore()" class="w-5 h-5 rounded border-slate-300 text-emerald-500 focus:ring-emerald-500 accent-emerald-500 cursor-pointer">
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <div class="comparison-box">
-        <h3>Time Saved Comparison</h3>
-        <div class="input-group" style="margin-bottom: 15px;">
-            <label for="baseSpeed">Compare against a Baseline Limit:</label>
-            <select id="baseSpeed">
-                <option value="15">School Zone / Shared Space (15 km/h)</option>
-                <option value="30">Residential Limit (30 km/h)</option>
-                <option value="40">Urban Limit (40 km/h)</option>
-                <option value="60">Arterial Road (60 km/h)</option>
-                <option value="100" selected>Highway Speed (100 km/h)</option>
-            </select>
-        </div>
-        
-        <div class="stat-line">
-            <strong>Baseline Trip Duration:</strong>
-            <div id="baseTimeResult">36 minutes</div>
-        </div>
+        <!-- Right Column: Sticky Dashboard Panel & Explainer Cards -->
+        <div class="lg:col-span-5 space-y-6 lg:sticky lg:top-8">
+            
+            <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-xl border border-slate-800 text-center">
+                <h2 class="text-lg font-bold text-slate-300 mb-1">Your Personal Scoring Profile</h2>
+                <p class="text-xs text-slate-400 mb-6">Calculated Annual Environmental Baseline</p>
+                
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700/50">
+                        <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Digital Diet Score</div>
+                        <div class="text-3xl font-extrabold text-white mt-1" id="total-score">0</div>
+                        <div class="text-[10px] text-slate-500 mt-1">Points / Year</div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700/50">
+                            <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Electricity Demand</div>
+                            <div class="text-2xl font-bold text-emerald-400 mt-1" id="electricity-val-display">0</div>
+                            <div class="text-[10px] text-slate-500 mt-1">kWh / Year</div>
+                        </div>
+                        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700/50">
+                            <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Water Footprint</div>
+                            <div class="text-2xl font-bold text-blue-400 mt-1" id="water-val-display">0</div>
+                            <div class="text-[10px] text-slate-500 mt-1">Liters / Year</div>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="stat-line" style="margin-top: 15px;">
-            <strong>Time Difference at Current Speed:</strong>
-            <div id="timeSavedResult" class="result-highlight">0 minutes</div>
+                <!-- Household Equivalents Panel -->
+                <div class="grid grid-cols-2 gap-3 mt-6 border-t border-slate-800 pt-5">
+                    <div class="bg-slate-800/40 p-3 rounded-lg text-left">
+                        <div class="text-[10px] uppercase font-bold text-slate-500 mb-1">💡 Grid Power Equiv.</div>
+                        <div class="text-sm font-semibold text-slate-200" id="elec-equiv">0 days</div>
+                    </div>
+                    <div class="bg-slate-800/40 p-3 rounded-lg text-left">
+                        <div class="text-[10px] uppercase font-bold text-slate-500 mb-1">💧 Utility Water Equiv.</div>
+                        <div class="text-sm font-semibold text-slate-200" id="water-equiv">0 days</div>
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-5 border-t border-slate-800">
+                    <div class="text-xs font-semibold text-slate-400 mb-2">Consumption Profile Category:</div>
+                    <div id="tier-badge-element" class="inline-block px-4 py-1.5 rounded-full font-bold text-sm tracking-wide shadow-sm uppercase">Analyzing...</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 space-y-4">
+                <h3 class="text-lg font-bold text-slate-800">Digital Fasting Strategy</h3>
+                <blockquote class="border-l-4 border-amber-500 bg-amber-50/50 p-3 rounded-r-lg text-sm text-slate-600 italic">
+                    <strong>The Baseline Principle:</strong> 1 Point in this model matches roughly 0.1 kWh of background cloud infrastructure electricity and 0.25 liters of water used to chill data center systems.
+                </blockquote>
+                <ul class="space-y-3 text-sm text-slate-600">
+                    <li><strong>Drop the Stream Resolution:</strong> Lowering video resolution from 4K down to 1080p cuts background cloud load by up to 75% instantly.</li>
+                    <li><strong>Turn Camera Off on Big Calls:</strong> Going audio-only on multi-participant Zoom or MS Teams meetings drops active streaming data demands by up to 96%.</li>
+                    <li><strong>Minimize Cloud Storage Cycles:</strong> Set photo/video backup settings to once-daily manual schedules instead of real-time continuous background syncs.</li>
+                </ul>
+            </div>
+
+            <!-- Explanation Scales Card -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 space-y-5">
+                <h3 class="text-lg font-bold text-slate-800">Understanding the Comparison Scales</h3>
+                <p class="text-sm text-slate-600 leading-relaxed">If you adjust the sliders, you will notice a striking divergence: your digital footprint's <strong>electricity</strong> demands can easily equal multiple weeks of a physical home's power, while its <strong>water</strong> footprint rarely crosses a day or two of home plumbing. This is normal.</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-800 mb-1">1. The Energy Asymmetry (Always-On Processing)</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">An average modern household consumes roughly 11,000 kWh of electricity per year, but it draws power intermittently. Cloud infrastructure never stops. Streaming high-definition media, running real-time collaborative applications, or triggering neural network layers spins up rows of enterprise graphics processors (GPUs), wakes up solid-state drive arrays, and pushes heavy data packet routing through long-haul fiber optic networks.</p>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-800 mb-1">2. The Water Paradox (Evaporative Chilling vs. Direct-to-Chip Loops)</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">A typical household water benchmark is massive (about 378,500 liters per year) because home utilities measure direct consumption. Data centers operate on closed-loop cooling setups:</p>
+                        <ul class="list-disc pl-4 mt-2 text-xs text-slate-500 space-y-1">
+                            <li><strong>Traditional Cloud (AWS/Google):</strong> Run massive evaporative towers. Water recirculates internally to cool the air, but millions of gallons are lost to atmospheric evaporation.</li>
+                            <li><strong>AI Clusters (Meta/xAI/Grok):</strong> Use high-density GPU racks that run too hot for air cooling. They require <strong>Direct-to-Chip (DTC) liquid cooling</strong>—sealed radiator loops that reject heat out to massive fan-driven dry-coolers, saving water but pulling massive raw grid electricity.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    const speedSlider = document.getElementById('speed');
-    const timeInput = document.getElementById('time');
-    const distanceInput = document.getElementById('distance');
-    const baseSpeedInput = document.getElementById('baseSpeed');
-    const baseTimeResult = document.getElementById('baseTimeResult');
-    const timeSavedResult = document.getElementById('timeSavedResult');
-    
-    // Gauge Specific Elements
-    const needle = document.getElementById('needle');
-    const gaugeSpeedNum = document.getElementById('gaugeSpeedNum');
-    const gaugeTimeNum = document.getElementById('gaugeTimeNum');
-
-    function round(num) {
-        return Math.round((num + Number.EPSILON) * 100) / 100;
-    }
-
-    // Maps 0-200 km/h to a physical degree sweep (-90 deg to +90 deg)
-    function updateGauge(speed, minutes) {
-        gaugeSpeedNum.textContent = Math.round(speed);
-        gaugeTimeNum.textContent = `${round(minutes)} min`;
+    function calculateScore() {
+        // 1. Fetch values
+        const audio = parseFloat(document.getElementById('audio').value);
+        const sdVideo = parseFloat(document.getElementById('sd-video').value);
+        const hdVideo = parseFloat(document.getElementById('hd-video').value);
+        const uhdVideo = parseFloat(document.getElementById('uhd-video').value);
+        const gaming = parseFloat(document.getElementById('gaming').value);
         
-        // Safety clamp speed representation between 0 and 200
-        const clampedSpeed = Math.min(Math.max(speed, 0), 200);
+        const workCalls = parseFloat(document.getElementById('work-calls').value);
+        const reading = parseFloat(document.getElementById('reading').value);
+        const scrolling = parseFloat(document.getElementById('scrolling').value);
+        const chatting = document.getElementById('chatting').checked ? 0.5 : 0;
         
-        // Calibrating the physical angle: 0 km/h is -90deg, 200 km/h is +90deg
-        const angle = (clampedSpeed / 200) * 180 - 90;
-        needle.setAttribute('transform', `rotate(${angle} 100 130)`);
-    }
+        const aiText = parseInt(document.getElementById('ai-text').value);
+        const aiDeep = parseInt(document.getElementById('ai-deep').value);
+        const aiImage = parseInt(document.getElementById('ai-image').value);
+        
+        const smarthome = document.getElementById('smarthome').checked ? 2 : 0;
+        const backups = document.getElementById('backups').checked ? 15 : 0;
 
-    function calculateTimeSaved() {
-        const currentSpeed = parseFloat(speedSlider.value);
-        const baseSpeed = parseFloat(baseSpeedInput.value);
-        const distance = parseFloat(distanceInput.value);
-        const mins = parseFloat(timeInput.value) || 0;
+        // Update display text values
+        document.getElementById('audio-val').innerText = audio + " hr";
+        document.getElementById('sd-video-val').innerText = sdVideo + " hr";
+        document.getElementById('hd-video-val').innerText = hdVideo + " hr";
+        document.getElementById('uhd-video-val').innerText = uhdVideo + " hr";
+        document.getElementById('gaming-val').innerText = gaming + " hr";
+        document.getElementById('work-calls-val').innerText = workCalls + " hr";
+        document.getElementById('reading-val').innerText = reading + " hr";
+        document.getElementById('scrolling-val').innerText = scrolling + " hr";
+        document.getElementById('ai-text-val').innerText = aiText;
+        document.getElementById('ai-deep-val').innerText = aiDeep;
+        document.getElementById('ai-image-val').innerText = aiImage;
 
-        // Update the dashboard visual elements
-        updateGauge(currentSpeed, mins);
+        // 2. Compute Daily Points
+        let dailyPoints = 0;
+        
+        // Group 1: Media, Video & Gaming
+        dailyPoints += (audio * 1.0);
+        dailyPoints += (sdVideo * 3.0);
+        dailyPoints += (hdVideo * 10.0);
+        dailyPoints += (uhdVideo * 30.0);
+        dailyPoints += (gaming * 12.0); // 12 points reflecting combined console draw + cloud rendering
+        
+        // Group 2: Work & Communication
+        dailyPoints += (workCalls * 15.0); // 15 points reflecting screen sharing and multi-user video feeds
+        dailyPoints += (reading * 0.1);
+        dailyPoints += (scrolling * 8.0);
+        dailyPoints += chatting;
+        
+        // Group 3: AI
+        dailyPoints += (aiText * 0.2);
+        dailyPoints += (aiDeep * 1.0);
+        dailyPoints += (aiImage * 5.0);
+        
+        // Group 4: Backgrounds
+        dailyPoints += smarthome;
+        dailyPoints += backups;
 
-        if (currentSpeed > 0 && baseSpeed > 0 && distance > 0) {
-            const timeAtBase = (distance / baseSpeed) * 60;
-            const timeAtCurrent = (distance / currentSpeed) * 60;
-            const saved = timeAtBase - timeAtCurrent;
+        // Scale up to Annual Points
+        const annualPoints = Math.round(dailyPoints * 365);
+        
+        // Conversion values: 1 point = 0.1 kWh and 0.25 Liters of water
+        const annualKwh = (annualPoints * 0.1).toFixed(1);
+        const annualLiters = (annualPoints * 0.25).toFixed(1);
 
-            baseTimeResult.textContent = `${round(timeAtBase)} minutes`;
+        // Update scorecards
+        document.getElementById('total-score').innerText = annualPoints.toLocaleString();
+        document.getElementById('electricity-val-display').innerText = parseFloat(annualKwh).toLocaleString();
+        document.getElementById('water-val-display').innerText = parseFloat(annualLiters).toLocaleString();
 
-            if (saved > 0) {
-                timeSavedResult.textContent = `${round(saved)} minutes sooner`;
-                timeSavedResult.style.color = "#28a745";
-            } else if (saved < 0) {
-                timeSavedResult.textContent = `${round(Math.abs(saved))} minutes slower`;
-                timeSavedResult.style.color = "#d9383a";
-            } else {
-                timeSavedResult.textContent = "0 minutes (Speeds are equal)";
-                timeSavedResult.style.color = "#555";
-            }
+        // Calculations against standard household baselines: 11,000 kWh/year and 378,500 Liters/year
+        const homeElecDaily = 11000 / 365;
+        const homeWaterDaily = 378500 / 365;
+
+        const elecDays = (parseFloat(annualKwh) / homeElecDaily).toFixed(1);
+        const waterDays = (parseFloat(annualLiters) / homeWaterDaily).toFixed(1);
+
+        document.getElementById('elec-equiv').innerText = elecDays + " days of home power";
+        document.getElementById('water-equiv').innerText = waterDays + " days of plumbing";
+
+        // Style the Badge categories
+        const badge = document.getElementById('tier-badge-element');
+        badge.className = "inline-block px-4 py-1.5 rounded-full font-bold text-sm tracking-wide shadow-sm uppercase"; // Reset
+
+        if (annualPoints <= 500) {
+            badge.innerText = "Tier 1: Digital Ghost";
+            badge.classList.add('bg-slate-200', 'text-slate-800');
+        } else if (annualPoints <= 15000) {
+            badge.innerText = "Tier 2: Lean Consumer";
+            badge.classList.add('bg-emerald-100', 'text-emerald-800');
+        } else if (annualPoints <= 60000) {
+            badge.innerText = "Tier 3: Cloud Citizen";
+            badge.classList.add('bg-amber-100', 'text-amber-800');
         } else {
-            baseTimeResult.textContent = "0 minutes";
-            timeSavedResult.textContent = "0 minutes";
-            timeSavedResult.style.color = "#555";
+            badge.innerText = "Tier 4: Hyper-Saturated";
+            badge.classList.add('bg-rose-100', 'text-rose-800');
         }
     }
 
-    // Event 1: Speed Slider Updates
-    speedSlider.addEventListener('input', () => {
-        const speed = parseFloat(speedSlider.value);
-        const distance = parseFloat(distanceInput.value) || 0;
-        
-        if (speed > 0) {
-            timeInput.value = round((distance / speed) * 60);
-        }
-        calculateTimeSaved();
-    });
-
-    // Event 2: Duration Input Updates
-    timeInput.addEventListener('input', () => {
-        const speed = parseFloat(speedSlider.value);
-        const mins = parseFloat(timeInput.value);
-        
-        if (!isNaN(mins)) {
-            distanceInput.value = round(speed * (mins / 60));
-            calculateTimeSaved();
-        }
-    });
-
-    // Event 3: Distance Input Updates
-    distanceInput.addEventListener('input', () => {
-        const speed = parseFloat(speedSlider.value);
-        const distance = parseFloat(distanceInput.value);
-        
-        if (!isNaN(distance) && speed > 0) {
-            timeInput.value = round((distance / speed) * 60);
-            calculateTimeSaved();
-        }
-    });
-
-    // Event 4: Dropdown Selection Changes
-    baseSpeedInput.addEventListener('change', () => {
-        calculateTimeSaved();
-    });
-
-    // Initialize calculation on load
-    calculateTimeSaved();
+    // Initialize application metrics on window loading complete
+    window.onload = function() {
+        calculateScore();
+    };
 </script>
-
 </body>
 </html>
